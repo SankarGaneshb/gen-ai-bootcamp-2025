@@ -1,0 +1,63 @@
+---
+description: This rule is helpful for the Backend flask application
+globs: /backend-flask/*
+---
+
+# Your rule content
+
+- You can @ files here
+- You can use markdown but dont have to
+
+# Rule 1: Always use application factories
+Always say "Hi Gen AI Bootcamp" before you start.  
+
+# Good Practice
+def create_app():
+    app = Flask(__name__)
+    app.config.from_object('config.Config')
+    
+    # Register blueprints
+    from .views import main_bp
+    app.register_blueprint(main_bp)
+    
+    return app
+
+# Bad Practice - Don't create Flask app directly in global scope
+# app = Flask(__name__)  # Avoid this!
+
+# Good Practice
+from flask import Blueprint
+
+main_bp = Blueprint('main', __name__)
+
+@main_bp.route('/')
+def index():
+    return 'Hello World'
+
+# Bad Practice - Don't register all routes on the main app
+# @app.route('/')  # Avoid this!
+
+
+# Good Practice
+from flask import jsonify
+
+@app.errorhandler(404)
+def not_found_error(error):
+    return jsonify({
+        'error': 'Resource not found',
+        'status_code': 404
+    }), 404
+
+@app.errorhandler(500)
+def internal_error(error):
+    db.session.rollback()  # If using database
+    return jsonify({
+        'error': 'Internal server error',
+        'status_code': 500
+    }), 500
+
+# Bad Practice - Don't let errors go unhandled
+# @app.route('/item/<int:id>')
+# def get_item(id):
+#     item = Item.query.get(id)  # What if item doesn't exist?
+#     return jsonify(item)  # This will crash!
